@@ -2,6 +2,7 @@ package learing.itstep.java;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +12,80 @@ import java.util.concurrent.Future;
 
 //задача э деякий сервіс що повертає дані про рівень місячгної інфляції у відсотках. Необхідно розрахувати ручну інфляцію утворивши 12 запитів до сервісу асинхронно
 public class Threading {
+ static class RandomizerOnMinimums implements Callable<Character> 
+ {
+    private final char start;
+    private final int range;
+
+    RandomizerOnMinimums(char start, int range) {
+        this.start = start;
+        this.range = range;
+    }
+
+    @Override
+    public Character call() throws Exception {
+        Random r = new Random();
+         Thread.sleep(1000);
+         char c = (char) (start + r.nextInt(range));
+          System.out.print(c);
+       return c;
+    }
+}
+
+     
+      private void demoRandomizerWork()
+    {
+        //1 = 13016,9 ms
+        //2 =
+        //3 = 5012,8 ms
+        //6 = 3012,4 ms
+        //9 = 2010,8 ms
+        //12 = 2011,0 ms
+        ExecutorService threadPool = Executors.newFixedThreadPool(2);
+        List <Future<Character>> tasks = new ArrayList<>();
+     long t = System.nanoTime();
+    for (int i =0 ;i<=12;i++)
+    {
+        tasks.add(threadPool.submit(new RandomizerOnMinimums('a', 26)));
+    }
+  StringBuilder sb = new StringBuilder();
+ 
+            for (Future<Character> task : tasks)
+            {
+            try
+            {
+          
+             sb.append(task.get());
+             }
+         catch (InterruptedException | ExecutionException ex) {
+    System.out.println(ex.getMessage());
+    }
+            }
+            
+            System.out.println("_______________________");
+        
+      
+       
+       threadPool.shutdown();
+       System.out.println("RandomizerOnMinimums--- " + sb.toString());
+         System.out.printf("%.1f ms\n", (System.nanoTime() - t) / 1e6);
+           System.out.println("_______________________");
+    }   
+     
+     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     static class MonthPercent implements Callable
     {
  //Передача аругмента
@@ -37,7 +112,7 @@ public class Threading {
         //9 =2003,9 ms
         //10 =2004,3
         //11 =2003,0 ms
-        //12 = 1004,0 ms
+        //12 = 1003,7 ms
         ExecutorService threadPool = Executors.newFixedThreadPool(12);
         List <Future<Double>> tasks = new ArrayList<>();
     long t = System.nanoTime();
@@ -67,7 +142,8 @@ public class Threading {
     }   
     public void demo() {
 //        demo2();
-         demoPercent();
+      //   demoPercent();
+        demoRandomizerWork();    
     }
     
     public void demo2() {
