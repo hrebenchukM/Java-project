@@ -9,188 +9,190 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-
-//задача э деякий сервіс що повертає дані про рівень місячгної інфляції у відсотках. Необхідно розрахувати ручну інфляцію утворивши 12 запитів до сервісу асинхронно
+// Головний клас демонстрації потоків
 public class Threading {
- static class RandomizerOnMinimums implements Callable<Character> 
- {
-    private final char start;
-    private final int range;
 
-    RandomizerOnMinimums(char start, int range) {
-        this.start = start;
-        this.range = range;
+    // --------------------
+    // Приклад 1: RandomizerOnMinimums
+    // --------------------
+    // Callable<Character> — це інтерфейс, що повертає результат і може кидати Exception
+    static class RandomizerOnMinimums implements Callable<Character> {
+        private final char start;
+        private final int range;
+
+        RandomizerOnMinimums(char start, int range) {
+            this.start = start;
+            this.range = range;
+        }
+
+        @Override
+        public Character call() throws Exception {
+            // Thread.sleep(1000) – "імітація затримки", наприклад, запит до сервісу
+            Thread.sleep(1000);
+
+            // Генерація випадкового символу
+            Random r = new Random();
+            char c = (char) (start + r.nextInt(range));
+            System.out.print(c); // виводимо одразу в консоль
+            return c; // повертаємо результат для основного потоку
+        }
     }
 
-    @Override
-    public Character call() throws Exception {
-        Random r = new Random();
-         Thread.sleep(1000);
-         char c = (char) (start + r.nextInt(range));
-          System.out.print(c);
-       return c;
-    }
-}
+    private void demoRandomizerWork() {
+        // ExecutorService — пул потоків, керує запуском потоків
+        ExecutorService threadPool = Executors.newFixedThreadPool(2); // 2 потоки одночасно
+        List<Future<Character>> tasks = new ArrayList<>(); // Future — результат асинхронного завдання
 
-     
-      private void demoRandomizerWork()
-    {
-        //1 = 13016,9 ms
-        //2 =
-        //3 = 5012,8 ms
-        //6 = 3012,4 ms
-        //9 = 2010,8 ms
-        //12 = 2011,0 ms
-        ExecutorService threadPool = Executors.newFixedThreadPool(2);
-        List <Future<Character>> tasks = new ArrayList<>();
-     long t = System.nanoTime();
-    for (int i =0 ;i<=12;i++)
-    {
-        tasks.add(threadPool.submit(new RandomizerOnMinimums('a', 26)));
-    }
-  StringBuilder sb = new StringBuilder();
- 
-            for (Future<Character> task : tasks)
-            {
-            try
-            {
-          
-             sb.append(task.get());
-             }
-         catch (InterruptedException | ExecutionException ex) {
-    System.out.println(ex.getMessage());
-    }
+        long t = System.nanoTime(); // вимірюємо час виконання
+
+        // створюємо 13 задач (0-12) асинхронно
+        for (int i = 0; i <= 12; i++) {
+            tasks.add(threadPool.submit(new RandomizerOnMinimums('a', 26)));
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        // отримуємо результати від задач (task.get() чекає завершення)
+        for (Future<Character> task : tasks) {
+            try {
+                sb.append(task.get()); // блокуючий виклик — програма чекає результат
+            } catch (InterruptedException | ExecutionException ex) {
+                System.out.println(ex.getMessage());
             }
-            
-            System.out.println("_______________________");
-        
-      
-       
-       threadPool.shutdown();
-       System.out.println("RandomizerOnMinimums--- " + sb.toString());
-         System.out.printf("%.1f ms\n", (System.nanoTime() - t) / 1e6);
-           System.out.println("_______________________");
-    }   
-     
-     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    static class MonthPercent implements Callable
-    {
- //Передача аругмента
+        }
+
+        System.out.println("\n_______________________");
+
+        threadPool.shutdown(); // обов'язково закриваємо пул потоків
+        System.out.println("RandomizerOnMinimums--- " + sb.toString());
+        System.out.printf("%.1f ms\n", (System.nanoTime() - t) / 1e6);
+        System.out.println("_______________________");
+    }
+
+    // --------------------
+    // Приклад 2: MonthPercent
+    // --------------------
+    // Callable<Double> — обчислює місячний відсоток
+    static class MonthPercent implements Callable<Double> {
+        private final int month;
+
         MonthPercent(int month) {
             this.month = month;
         }
-        private final int month;
-     @Override
+
+        @Override
         public Double call() throws Exception {
-            Thread.sleep(1000);
-            return this.month / 10.0;
+            Thread.sleep(1000); // затримка для імітації запиту
+            return this.month / 10.0; // повертаємо "штучний" процент
         }
     }
-    private void demoPercent()
-    {
-        //1 = 12010,7 ms
-        //2 = 6006,8 ms
-        //3 = 4005,3 ms
-        //4 = 3004,6 ms
-        //5 = 3003,7 ms
-        //6 =2003,3 ms
-        //7 =2004,3 ms
-        //8 =2003,3 ms
-        //9 =2003,9 ms
-        //10 =2004,3
-        //11 =2003,0 ms
-        //12 = 1003,7 ms
+
+    private void demoPercent() {
+        // 12 потоків одночасно (по 1 на місяць)
         ExecutorService threadPool = Executors.newFixedThreadPool(12);
-        List <Future<Double>> tasks = new ArrayList<>();
-    long t = System.nanoTime();
-        for (int i =1 ;i<=12;i++)
-    {
-        tasks.add(threadPool.submit(new MonthPercent(i)));
-    }
-//       Future <Double> task = threadPool.submit(new MonthPercent(11));
-        try
-        {
-            Double sum = 100.0;
-            for (Future<Double> task : tasks)
-            {
-                
-            Double res = task.get();
-            System.out.println(res);
-            sum*=(1.0+res/100.0);
+        List<Future<Double>> tasks = new ArrayList<>();
+
+        long t = System.nanoTime();
+
+        for (int i = 1; i <= 12; i++) {
+            tasks.add(threadPool.submit(new MonthPercent(i)));
+        }
+
+        try {
+            Double sum = 100.0; // початкове значення, наприклад, 100%
+            for (Future<Double> task : tasks) {
+                Double res = task.get(); // чекаємо результат
+                System.out.println(res);
+                sum *= (1.0 + res / 100.0); // "накопичення інфляції"
             }
             System.out.println("_______________________");
-         System.out.printf("%.1f ms: %.3f\n", (System.nanoTime() - t) / 1e6, sum);
+            System.out.printf("%.1f ms: %.3f\n", (System.nanoTime() - t) / 1e6, sum);
+        } catch (InterruptedException | ExecutionException ex) {
+            System.out.println(ex.getMessage());
         }
-         catch (InterruptedException | ExecutionException ex) {
-    System.out.println(ex.getMessage());
-    }
-       
-       threadPool.shutdown();
-    }   
-    public void demo() {
-//        demo2();
-      //   demoPercent();
-        demoRandomizerWork();    
-    }
-    
-    public void demo2() {
-        // керовані запуски потоків - виконавці
-    ExecutorService threadPool = Executors.newFixedThreadPool(3);
 
-    // Runnable
-    Future<?>task1 = threadPool.submit(new Runnable() { // inline implementation
-        @Override
-        public void run() {
-            System.out.println("Task 2 -Runnable executed");
-        }
-    });
-    
-     Future<String> task2 = threadPool.submit(new Callable<String>() { // inline implementation
-        @Override
-        public String call() throws Exception {
-            System.out.println("Task 2 -Callable executing");
-            return "Task 2 -Callable executed";
-        }
-    });
-     //Виконавець пул потоків вимагає зупинення ,інакше программа не зупиняється
-   String res2 ;
-   try{
-       res2= task2.get();//await task2
-       System.out.println(res2);
-   }
-   catch (InterruptedException | ExecutionException ex) {
-    System.out.println(ex.getMessage());
-   }
-   
-    threadPool.shutdown(); 
-   
+        threadPool.shutdown();
     }
+
+    // --------------------
+    // Приклад 3: Використання ExecutorService з Runnable та Callable
+    // --------------------
+    public void demo2() {
+        ExecutorService threadPool = Executors.newFixedThreadPool(3);
+
+        // Runnable — завдання без повернення результату
+        Future<?> task1 = threadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Task 2 -Runnable executed");
+            }
+        });
+
+        // Callable — завдання з поверненням результату
+        Future<String> task2 = threadPool.submit(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                System.out.println("Task 2 -Callable executing");
+                return "Task 2 -Callable executed";
+            }
+        });
+
+        try {
+            String res2 = task2.get(); // чекаємо результат
+            System.out.println(res2);
+        } catch (InterruptedException | ExecutionException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        threadPool.shutdown(); // обов'язково закриваємо пул
+    }
+
+    // --------------------
+    // Приклад 4: Базові потоки
+    // --------------------
     public void demo1() {
-        //базовий спосіб використання потоків
-        Runnable task1 = new Runnable() {//inline implementation
+        Runnable task1 = new Runnable() {
             @Override
             public void run() {
                 System.out.println("Task 1 executed");
             }
         };
 
-        
-        task1.run();      //синхронний запуск       
-        new Thread(task1).start(); // запуск в окремому потоці
-        //"+" максимальна швидкість виконання 
-        //"-" некерованість - ми не можемо зупинити потік 
+        task1.run();             // синхронний виклик (в потоці main)
+        new Thread(task1).start(); // асинхронний запуск в окремому потоці
+    }
+
+    // --------------------
+    // Головний метод демонстрації
+    // --------------------
+    public void demo() {
+        //demo2();       // демонстрація ExecutorService з Runnable/Callable
+        //demoPercent(); // демонстрація асинхронних обчислень інфляції
+        demoRandomizerWork(); // демонстрація генерації випадкових символів
     }
 }
+
+
+
+/*
+| C#                    | Java (до нових версій)                              |
+| --------------------- | --------------------------------------------------- |
+| `await Task.Run(...)` | `ExecutorService.submit(Callable)` + `Future.get()` |
+| Магія `async/await`   | Треба чекати вручну через `get()`                   |
+| Простий синтаксис     | Більше коду, контроль ресурсів                      |
+
+
+
+Runnable — просто виконує код, нічого не повертає, не кидає checked Exception.
+
+Callable<T> — виконує код, повертає результат типу T і може кидати Exception.
+
+ExecutorService - Пул потоків для керування багатьма потоками. Метод submit() повертає Future — об’єкт, через який можна дочекатися результату.
+
+Future.get()- Блокуючий виклик, чекає завершення завдання і повертає результат.
+
+Може кидати InterruptedException або ExecutionException.
+
+Thread.sleep() - Імітує затримку (наприклад, довгий запит до сервісу).
+
+threadPool.shutdown() - Обов'язково викликати після завершення роботи, інакше програма не завершиться.*/
