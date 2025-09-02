@@ -16,6 +16,13 @@ Entry Point
     @param args cmd-line arguments
 */
     public static void main(String[] args) {
+        
+    Threading threading = new Threading();
+    
+    threading.demo();
+    
+    
+    
         //primitives - єдині value-типи , інші value-типи створити не можна
         // reference-типи дозволені
         
