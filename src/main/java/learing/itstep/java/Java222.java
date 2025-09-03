@@ -21,15 +21,15 @@ Entry Point
 */
     public static void main(String[] args) {
         
-    Threading threading = new Threading();
+    //Threading threading = new Threading();
     
-    threading.demo();
+  //  threading.demo();
     
-    
+    new ChainingHW().demo();
     
         //primitives - єдині value-типи , інші value-типи створити не можна
         // reference-типи дозволені
-        
+        /*
         byte b; //0 bit
         //b = 250;-помилка-всі типи знакові
         b = -125;// ,беззнакових варіацій не існує
@@ -50,7 +50,7 @@ Entry Point
         /*У Java немає List<int> → треба використовувати Integer( обект в куче) (обгортка).
 
 Це схоже на C# List<int>, але у Java примітиви треба обгортати.*/
-        List <Integer> collection = new ArrayList<>();
+       /* List <Integer> collection = new ArrayList<>();
         collection.add(10);
         collection.add(20);
         collection.add(30);
@@ -138,8 +138,9 @@ Entry Point
         else
         { 
             System.out.println("str1=/=str2");
-        }
+        }*/
     }
+    
 }
 /*== — порівнює посилання на об’єкт, а не значення.
 
