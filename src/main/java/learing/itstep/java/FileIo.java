@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
@@ -110,8 +111,8 @@ public class FileIo {
      
     //requireNonNull = ! C#
         System.out.println("-------------------------------------------");
-    Map<String,String> config = new HashMap<>();
-    
+   // Map<String,String> config = new HashMap<>();
+        Map<String,String> config = new LinkedHashMap<>();
    try(    InputStream inputStream = Objects.requireNonNull(this
              .getClass()
              .getClassLoader()
@@ -123,10 +124,22 @@ public class FileIo {
        int i = 1;
        while (scanner.hasNextLine())
      {
-      String line = scanner.nextLine();
+      String line = scanner.nextLine().trim();
       System.out.println(line);
-      config.put(i+ "",line);
-      i+=1;
+      if(line.isEmpty() || line.startsWith(";"))
+      {
+        continue;
+      }
+      // разделитель "="
+      int eqI = line.indexOf('=');
+      if(eqI > 0)
+      {
+          String key = line.substring(0, eqI).trim();
+          String value = line.substring(eqI+1).trim();
+          config.put(key, value);
+      }
+    //   config.put(i+ "",line);
+    //  i+=1;
      }
    }
         catch(IOException ex)
