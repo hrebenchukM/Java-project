@@ -26,8 +26,8 @@ Entry Point
   //  threading.demo();
     
   //  new ChainingHW().demo();
-      new FileIo().demo();
-  
+     // new FileIo().demo();
+    new Db().demo();
         //primitives - єдині value-типи , інші value-типи створити не можна
         // reference-типи дозволені
         /*
