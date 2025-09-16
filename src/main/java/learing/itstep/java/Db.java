@@ -18,6 +18,7 @@ import java.util.Scanner;
  * @author Lenovo
  */
 public class Db {
+    
  private Map<String, String> loadConfig(String iniFileName) throws Exception {
         Map<String, String> config = new HashMap<>();
         try(InputStream inputStream = Objects.requireNonNull(
@@ -46,6 +47,13 @@ public class Db {
     }
  
  
+   private Map<String, String> mergeConfigs(Map<String, String> dbConfig, Map<String, String> userConfig) {
+        if (userConfig != null) {
+            dbConfig.putAll(userConfig); 
+        }
+        return dbConfig;
+    }
+ 
     public void demo() {//JDBC - Java DataBase Community - аналог ADO.NET C#
        Driver mysqlDriver;                //набір інструментів для работи з бд
     
@@ -55,6 +63,13 @@ public class Db {
        try
        {
        Map<String, String> config =  loadConfig("db.ini");
+          try {
+                Map<String, String> userConfig = loadConfig("user.ini");
+                config = mergeConfigs(config, userConfig);
+                System.out.println("user.ini found");
+            } catch (Exception ex) {
+                System.out.println("user.ini not found");
+            }
 //    connectionString = String.format(
 //                    "%s:%s://%s:%s/%s?user=%s&password=%s&%s",
 //                    config.get("protocol"),
